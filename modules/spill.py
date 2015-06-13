@@ -9,7 +9,7 @@ from productions import table_exists
 
 # This dictionary stores values used in classifying a
 #   spill as being good or bad.
-# Different 'roadsets' (57, 59, 62) have different criteria
+#   Different 'roadsets' (57, 59, 62) have different criteria
 spill_cut = {}
 spill_cut['57'] = {'targetPos': (1, 7),
                    'TSGo': (1e3, 8e3),
@@ -428,10 +428,12 @@ def get_bad_spills(server, schema):
 
 
 def write_bad_spills_to_table(server, schema, bad_spill_set, clear=False):
-"""
-Getting a bad spill can take a lot of time. 
-Use this to store result to a MySQL table.
-"""
+    """
+    Getting a bad spill can take a lot of time. 
+    Use this to store result to a MySQL table.
+    """
+
+    print "Writing bad spill set to table..."
 
     try:
         # Connect to specified server and schema
@@ -471,7 +473,7 @@ Use this to store result to a MySQL table.
 
 
 def get_bad_spills_from_table(server, schema):
-"""Once a bad spill set is stored, it can be loaded back up"""
+    """Once a bad spill set is stored, it can be loaded back up"""
 
     bad_spill_set = set()
 
@@ -503,10 +505,10 @@ def get_bad_spills_from_table(server, schema):
 
 
 def clear_bad_spill_dimuons(server, schema, table, bad_spill_set):
-"""
-If you have an anlysis table and a bad spill set
-Call this function to have all dimuons from bad spillID's deleted
-"""
+    """
+    If you have an anlysis table and a bad spill set
+    Call this function to have all dimuons from bad spillID's deleted
+    """
 
     # Assemble DELETE query from bad_spill_set
     query = """DELETE FROM %s.%s

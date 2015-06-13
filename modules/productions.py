@@ -13,9 +13,9 @@ Options:
 """
 
 
-import MySQLdb as Mdb
-import servers
+import MySQLdb as mdb
 from docopt import docopt
+from servers import server_dict
 
 roadset_dict = {'49': {'lower': 8184, 'upper': 8896},
                 '56': {'lower': 8897, 'upper': 8908},
@@ -28,16 +28,15 @@ revision_list = ['R000', 'R001', 'R003', 'R004', 'R005']
 
 
 def get_productions(revision='R004', server=None, roadset=None):
-"""
-Retrieve a dictionary of lists of productions for a certain revision.
-Example output:
-    output_dict = { server_name1: [ production1, production2, ... ],
-                    server_name2: [ production22, production25, ...],
-                    ...
-                  }
-"""
+    """
+    Retrieve a dictionary of lists of productions for a certain revision.
+    Example output:
+        output_dict = { server_name1: [ production1, production2, ... ],
+                        server_name2: [ production22, production25, ...],
+                        ...
+                      }
+    """
     prod_dict = {}
-    from servers import server_dict
 
     # For each server that we have defined...
     for server_entry in server_dict:
@@ -48,7 +47,7 @@ Example output:
             prod_dict[server_entry] = []
             try:
                 # Connect to specified server and schema
-                db = Mdb.connect(read_default_file='../.my.cnf',
+                db = mdb.connect(read_default_file='../.my.cnf',
                                  read_default_group='guest', host=server_entry,
                                  port=server_dict[server_entry]['port'])
 
@@ -74,13 +73,43 @@ Example output:
                 if db:
                     db.close()
 
-            except Mdb.Error, e:
+            except mdb.Error, e:
                 try:
                     print "MySQL Error [%d]: %s" % (e.args[0], e.args[1])
                 except IndexError:
                     print "MySQL Error: %s" % str(e)
 
     return prod_dict
+
+
+def table_exists(server, schema, table):
+    """
+    Takes a server, schema, and table name
+    Returns:
+        1 if table exists (case-sensitive)
+        0 if table does not exist
+        -1 if query or connection error occurs
+    """
+
+    exists = -1
+
+    try:
+
+        db = mdb.connect(read_default_file='../.my.cnf', 
+                         read_default_group='guest',
+                         db=schema, 
+                         host=server,
+                         port=server_dict[server]['port'])
+        cur = db.cursor()
+        cur.execute("SHOW TABLES LIKE '" + table + "'")
+        exists = 1 if cur.rowcount > 0 else 0
+
+    except mdb.Error, e:
+
+        print "Error %d: %s" % (e.args[0], e.args[1])
+        return -1
+
+    return exists
 
 
 def main():
